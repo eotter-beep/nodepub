@@ -13,7 +13,7 @@ const auth = (usern, password) => ({
   pass: password,
 });
 
-function start(ip, portnum, usern, password) {
+function start(ip, portnum, usern, password, responseText = 'Hello World') {
   const openvpn = openvpnlib.connect(opts(ip, portnum));
 
   openvpn.on('connected', () => {
@@ -23,7 +23,6 @@ function start(ip, portnum, usern, password) {
   openvpn.on('console-output', output => console.log(output));
   openvpn.on('state-change', state => console.log(state));
   openvpn.on('error', error => console.log(error));
-  openvpnlib.getLog(console.log);
 
   // helper for sending responses
   function serverResponse(res, code) {
@@ -32,6 +31,12 @@ function start(ip, portnum, usern, password) {
     res.end(code);
   }
 
+  // create the HTTP server here
+  const server = http.createServer((req, res) => {
+    serverResponse(res, responseText); // user-defined or default response
+  });
+
+  // start listening
   server.listen(portnum, ip, () => {
     console.log(`Nodepub server running at http://${ip}:${portnum}/`);
   });
